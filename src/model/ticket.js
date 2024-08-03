@@ -10,4 +10,4 @@ const ticketSchema = mongoose.Schema({
   owner_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
-export default mongoose.model("ticket", ticketSchema);
+export default mongoose.model("Ticket", ticketSchema);

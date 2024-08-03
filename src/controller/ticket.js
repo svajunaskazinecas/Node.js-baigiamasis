@@ -1,35 +1,44 @@
+import Ticket from "../model/ticket.js";
+import User from "../model/user.js";
 import { v4 as uuidv4 } from "uuid";
-import TicketModel from "../model/ticket.js";
 
-const REGISTER = (req, res) => {};
-const LOGIN = (req, res) => {};
-const TOKEN = (req, res) => {};
-const USERS = async (req, res) => {};
-const USER_BY_ID = (req, res) => {};
+export const buyTicket = async (req, res) => {
+  const {
+    title,
+    ticket_price,
+    from_location,
+    to_location,
+    to_location_photo_url,
+  } = req.body;
+  const userId = req.userId;
 
-const TICKET = async (req, res) => {
   try {
-    const ticket = {
+    const user = await User.findOne({ uuid: userId });
+    console.log(user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.money_balance < ticket_price) {
+      return res.status(400).json({ message: "Insufficient funds" });
+    }
+
+    const ticket = await Ticket.create({
       id: uuidv4(),
-      title: req.body.title,
-      price: req.body.price,
-      from_location: req.body.from_location,
-      to_location: req.body.to_location,
-      to_location_photo_url: req.body.to_location_photo_url,
-      owner_id: req.body.owner_id,
-    };
+      title,
+      ticket_price,
+      from_location,
+      to_location,
+      to_location_photo_url,
+      owner_id: userId,
+    });
 
-    const response = await new TicketModel(ticket);
+    user.money_balance -= ticket_price;
+    await user.save();
 
-    await response.save();
-
-    return res
-      .status(201)
-      .json({ message: "ticket successfully bought", response });
+    res.status(200).json({ message: "Ticket purchased successfully", ticket });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: "error in application" });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
-export { REGISTER, LOGIN, TOKEN, USERS, USER_BY_ID, TICKET };
