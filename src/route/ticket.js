@@ -8,8 +8,8 @@ import { buyTicket } from "../controller/ticket.js";
 
 router.post("/register", signUp);
 router.post("/login", auth, login);
-router.post("/token", getNewJwtToken);
-router.get("/user", auth, getAllUsers);
+router.post("/token", auth, getNewJwtToken);
+router.get("/users", auth, getAllUsers);
 router.get("/user/:id", auth, getUserById);
 router.post("/ticket", auth, buyTicket);
 

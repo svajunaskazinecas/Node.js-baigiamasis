@@ -12,9 +12,10 @@ export const buyTicket = async (req, res) => {
   } = req.body;
   const userId = req.userId;
 
+  console.log(`UserId: ${userId}`);
+
   try {
-    const user = await User.findOne({ uuid: userId });
-    console.log(user);
+    const user = await User.findOne({ _id: userId });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -35,9 +36,16 @@ export const buyTicket = async (req, res) => {
     });
 
     user.money_balance -= ticket_price;
+    user.bought_tickets.push(ticket.id);
     await user.save();
 
-    res.status(200).json({ message: "Ticket purchased successfully", ticket });
+    res
+      .status(200)
+      .json({
+        message: "Ticket purchased successfully",
+        ticket,
+        money_balance: user.money_balance,
+      });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

@@ -7,10 +7,15 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const signUp = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, money_balance } = req.body;
 
   if (!email.includes("@") || password.length < 6 || !/\d/.test(password)) {
-    return res.status(400).json({ message: "Validation failed" });
+    return res
+      .status(400)
+      .json({
+        message:
+          "Please provide correct email, password needs to be atleast 6 symbols with one number included",
+      });
   }
 
   const capFirstName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -18,18 +23,18 @@ export const signUp = async (req, res) => {
 
   try {
     const user = await User.create({
-      id: uuidv4(),
+      uuid: uuidv4(),
       name: capFirstName,
       email,
       password: hashedPassword,
-      money_balance: req.body.money_balance,
+      money_balance,
     });
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.uuid }, process.env.JWT_SECRET, {
       expiresIn: "2h",
     });
     const refreshToken = jwt.sign(
-      { userId: user.id },
+      { userId: user.uuid },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: "1d" }
     );
@@ -45,6 +50,10 @@ export const signUp = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
 
   try {
     const user = await User.findOne({ email });
@@ -67,7 +76,7 @@ export const login = async (req, res) => {
       jwt_refresh_token: refreshToken,
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Auth failed", error: err.message });
   }
 };
 
@@ -96,6 +105,6 @@ export const getNewJwtToken = (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Please log in again" });
+    res.status(400).json({ message: "Incorrect token value" });
   }
 };

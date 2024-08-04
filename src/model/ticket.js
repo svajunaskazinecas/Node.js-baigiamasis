@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 const ticketSchema = mongoose.Schema({
-  id: { type: String, required: true },
+  uuid: {
+    type: String,
+    default: uuidv4,
+    unique: true,
+  },
   title: { type: String, required: true },
-  price: { type: Number, required: true },
+  ticket_price: { type: Number, required: true },
   from_location: { type: String, required: true },
   to_location: { type: String, required: true },
   to_location_photo_url: { type: String, required: true },
